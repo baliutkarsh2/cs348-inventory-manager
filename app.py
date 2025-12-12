@@ -5,22 +5,64 @@ import os
 from flask import Flask, redirect, render_template, request, url_for, flash
 import json
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Index, text
+from sqlalchemy import Index, text, event
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 
 
 app = Flask(__name__)
+
+# Detect database type from URL
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///app.db")
+IS_POSTGRES = DATABASE_URL.startswith("postgresql")
+IS_SQLITE = DATABASE_URL.startswith("sqlite")
+
+# Configure engine options based on database type
+# MVCC (Multi-Version Concurrency Control):
+# - PostgreSQL: Native MVCC with READ COMMITTED allows concurrent readers/writers
+# - SQLite: WAL mode provides MVCC-like behavior (concurrent reads, non-blocking writes)
+if IS_POSTGRES:
+    # PostgreSQL with true MVCC - READ COMMITTED is the sweet spot for concurrency
+    engine_options = {
+        "isolation_level": "READ COMMITTED",  # MVCC: readers don't block writers, writers don't block readers
+        "pool_size": 5,
+        "pool_recycle": 300,
+        "pool_pre_ping": True,
+    }
+elif IS_SQLITE:
+    # SQLite with WAL mode for MVCC-like concurrency
+    engine_options = {
+        "isolation_level": "SERIALIZABLE",  # SQLite default; WAL handles concurrency
+        "connect_args": {"check_same_thread": False},  # Allow multi-threaded access
+    }
+else:
+    engine_options = {}
+
 app.config.update(
-    SECRET_KEY=os.getenv("SECRET_KEY", "dev-secret-key"),  # for flash messages
-    SQLALCHEMY_DATABASE_URI=os.getenv("DATABASE_URL", "sqlite:///app.db"),
+    SECRET_KEY=os.getenv("SECRET_KEY", "dev-secret-key"),
+    SQLALCHEMY_DATABASE_URI=DATABASE_URL,
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
-    SQLALCHEMY_ENGINE_OPTIONS={"isolation_level": "SERIALIZABLE"},  # for Stage 3
+    SQLALCHEMY_ENGINE_OPTIONS=engine_options,
 )
 
 
 db = SQLAlchemy(app)
 csrf = CSRFProtect(app)
 app.jinja_env.globals['csrf_token'] = generate_csrf
+
+
+# Enable WAL mode for SQLite (MVCC-like concurrency: readers don't block writers)
+# This is registered on the Engine class, not instance, to work outside app context
+if IS_SQLITE:
+    from sqlalchemy import Engine
+    
+    @event.listens_for(Engine, "connect")
+    def set_sqlite_pragma(dbapi_connection, connection_record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL")      # Write-Ahead Logging for concurrency
+        cursor.execute("PRAGMA synchronous=NORMAL")    # Good balance of safety and speed
+        cursor.execute("PRAGMA busy_timeout=5000")     # Wait 5s if DB is locked
+        cursor.execute("PRAGMA cache_size=-64000")     # 64MB cache
+        cursor.close()
 
 
 # ==========================
