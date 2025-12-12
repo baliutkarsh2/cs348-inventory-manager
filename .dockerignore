@@ -1,0 +1,32 @@
+# Virtual environments
+env/
+env10/
+venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Local database
+instance/
+*.db
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# Docs and scripts (not needed in container)
+docs/
+scripts/
+*.md
+!README.md
+
+# Google Cloud
+.gcloudignore
+app.yaml

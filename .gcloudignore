@@ -1,0 +1,25 @@
+# This file specifies files that are NOT uploaded to Google Cloud when you run gcloud commands.
+# https://cloud.google.com/sdk/docs/scripting-gcloud#--ignore-file
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual envs
+env/
+venv/
+.venv/
+env10/
+
+# Git
+.git/
+.gitignore
+
+# Local DB files
+*.db
+
+# IDE
+.vscode/
+.idea/

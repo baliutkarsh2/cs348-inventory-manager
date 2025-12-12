@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="text-center py-5">
+  <h1 class="display-4">Inventory Manager</h1>
+  <p class="lead">A modern CRUD + Reports app for products and stock.</p>
+  <div class="mt-4">
+    <a href="{{ url_for('products_list') }}" class="btn btn-primary me-2"><i class="fa-solid fa-box-open me-1"></i>Manage Products</a>
+    <a href="{{ url_for('products_report') }}" class="btn btn-outline-secondary me-2"><i class="fa-solid fa-chart-line me-1"></i>Reports</a>
+    <a href="{{ url_for('init_db') }}" class="btn btn-success"><i class="fa-solid fa-database me-1"></i>Initialize & Seed DB</a>
+  </div>
+</div>
+{% endblock %}

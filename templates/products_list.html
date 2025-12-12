@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0"><i class="fa-solid fa-box-open me-2"></i>Products</h2>
+  <a class="btn btn-primary" href="{{ url_for('products_new') }}"><i class="fa-solid fa-plus me-1"></i>New Product</a>
+</div>
+
+<table id="productsTable" class="table table-striped align-middle">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>SKU</th>
+      <th>Category</th>
+      <th>Supplier</th>
+      <th>Location</th>
+      <th>Price</th>
+      <th>Stock</th>
+      <th>Reorder</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for p in products %}
+    <tr>
+      <td>{{ p.name }}</td>
+      <td>{{ p.sku }}</td>
+      <td>{{ p.category.name }}</td>
+      <td>{{ p.supplier.name }}</td>
+      <td>{{ p.location.name }}</td>
+      <td>${{ '%.2f'|format(p.price) }}</td>
+      <td>
+        {{ p.units_in_stock }}
+        {% if p.units_in_stock <= p.reorder_level %}
+          <span class="badge bg-warning text-dark ms-1">Reorder</span>
+        {% endif %}
+      </td>
+      <td>{{ p.reorder_level }}</td>
+      <td>
+        <a href="{{ url_for('products_edit', product_id=p.id) }}" class="btn btn-sm btn-outline-secondary" title="Edit"><i class="fa-solid fa-pen"></i></a>
+        <form action="{{ url_for('products_delete', product_id=p.id) }}" method="post" class="d-inline" onsubmit="return confirm('Delete this product?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button class="btn btn-sm btn-outline-danger" title="Delete"><i class="fa-solid fa-trash"></i></button>
+        </form>
+        <form action="{{ url_for('products_txn_adjust', product_id=p.id) }}" method="post" class="d-inline" title="Increase Stock">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <input type="hidden" name="inc" value="1" />
+          <button class="btn btn-sm btn-outline-success"><i class="fa-solid fa-plus"></i></button>
+        </form>
+        <form action="{{ url_for('products_txn_adjust', product_id=p.id) }}" method="post" class="d-inline" title="Decrease Stock">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <input type="hidden" name="inc" value="-1" />
+          <button class="btn btn-sm btn-outline-warning"><i class="fa-solid fa-minus"></i></button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% if products|length == 0 %}
+<div class="alert alert-info">No products yet. Click "New Product" to add one.</div>
+{% endif %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const table = new DataTable('#productsTable', {
+      order: [[0, 'asc']],
+      pageLength: 10,
+      layout: {
+        topStart: 'pageLength',
+        topEnd: 'search',
+        bottomStart: 'info',
+        bottomEnd: 'paging'
+      }
+    });
+  });
+</script>
+{% endblock %}
