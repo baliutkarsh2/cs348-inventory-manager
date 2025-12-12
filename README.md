@@ -1,6 +1,8 @@
-# CS348 Project — Inventory & Products (Flask + SQLite)
+# Inventory Manager (Flask + SQLite)
 
-This repo implements the full project from Stage 1 to Stage 3 using Python, Flask, and SQLAlchemy with SQLite.
+A modern CRUD + Reports web application for inventory and product management.
+
+🚀 **Live Demo**: https://inventory-manager2-1031129724175.us-central1.run.app
 
 ## Stages overview
 
@@ -27,27 +29,6 @@ Indexes:
 - ix_products_supplier on Products(supplier_id) — supports supplier filter
 - ix_products_price on Products(price) — supports price range filters
 - ix_products_location on Products(location_id) — supports location-based queries
-
-## How to run (Windows PowerShell)
-
-Prereqs: Python 3.12+ (already detected via `env10/`). If using the provided venv, activate it:
-
-```powershell
-# From repo root
-. .\env10\Scripts\Activate.ps1
-# Optional: install requirements if needed
-pip install -r requirements.txt
-```
-
-Start the app:
-
-```powershell
-python .\app.py
-```
-
-Open http://127.0.0.1:5000 and click "Initialize & Seed DB" once. Then:
-- Manage Products: Create/Edit/Delete; category, supplier, and location lists are populated from the database.
-- Reports: Filter by category/supplier/price/stock and view stats + chart.
 
 ## Modern UX upgrades
 
@@ -81,31 +62,13 @@ Open http://127.0.0.1:5000 and click "Initialize & Seed DB" once. Then:
 
 Notes: SQLite serializes writes; for multi-user concurrency, a server DB (Postgres/MySQL) would allow finer-grained locks and MVCC.
 
-## Deployment (optional extra credit)
+## Deployment
 
-- Google App Engine (Standard, Python 3.11):
-  - Files added: `app.yaml`, `.gcloudignore` (and `gunicorn` in requirements).
-  - By default, `DATABASE_URL` is set to `sqlite:////tmp/app.db` in `app.yaml` which is writable on App Engine Standard for demo/testing.
-  - For production/extra credit, point `DATABASE_URL` to a Cloud SQL instance (Postgres/MySQL) and remove the SQLite file.
+### Live URL
 
-### Deploy steps (PowerShell / CMD)
+🌐 **https://inventory-manager2-1031129724175.us-central1.run.app**
 
-```bash
-# One-time: authenticate and set project
-gcloud auth login
-gcloud config set project <YOUR_GCP_PROJECT_ID>
-
-# (Optional) create the App Engine app (choose a region, e.g., us-central)
-gcloud app create --region=us-central
-
-# Deploy
-gcloud app deploy
-
-# Open the app
-gcloud app browse
-```
-
-After first deploy, visit your URL and click "Initialize & Seed DB" to create tables and sample data.
+Deployed on **Google Cloud Run**
 
 ## Troubleshooting
 
